@@ -276,7 +276,7 @@ public class YouTubeAuthService : IYouTubeAuthService
 
         public async Task StoreAsync<T>(string key, T value)
         {
-            var json = System.Text.Json.JsonSerializer.Serialize(value);
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(value);
             await _credentialStore.SaveTokenAsync(json);
         }
 
@@ -295,7 +295,7 @@ public class YouTubeAuthService : IYouTubeAuthService
 
             try
             {
-                return System.Text.Json.JsonSerializer.Deserialize<T>(json);
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json);
             }
             catch
             {
