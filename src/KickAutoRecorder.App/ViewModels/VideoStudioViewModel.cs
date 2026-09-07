@@ -280,6 +280,8 @@ public partial class VideoStudioViewModel : ObservableObject
                     }
                 }
             }
+
+            StartSyncTimer();
         }
         catch (Exception ex)
         {
@@ -288,6 +290,72 @@ public partial class VideoStudioViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private System.Windows.Threading.DispatcherTimer? _syncTimer;
+
+    private void StartSyncTimer()
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher == null || _syncTimer != null) return;
+
+        dispatcher.Invoke(() =>
+        {
+            _syncTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(1500)
+            };
+            _syncTimer.Tick += async (s, e) => await SyncActiveJobsFromDbAsync();
+            _syncTimer.Start();
+        });
+    }
+
+    private async Task SyncActiveJobsFromDbAsync()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            if (_jobRepository != null)
+            {
+                var dbJobs = await _jobRepository.GetAllAsync();
+                foreach (var dbJob in dbJobs)
+                {
+                    var existing = Jobs.FirstOrDefault(j => j.Id == dbJob.Id);
+                    if (existing != null)
+                    {
+                        existing.Status = dbJob.Status;
+                        existing.ProgressPercentage = dbJob.ProgressPercentage;
+                        existing.ErrorMessage = dbJob.ErrorMessage;
+                    }
+                }
+            }
+
+            if (_uploadRepository != null)
+            {
+                var dbUploadJobs = await _uploadRepository.GetAllAsync();
+                foreach (var dbUpload in dbUploadJobs)
+                {
+                    var existing = UploadJobs.FirstOrDefault(u => u.Id == dbUpload.Id);
+                    if (existing != null)
+                    {
+                        existing.Status = dbUpload.Status;
+                        existing.ProgressPercent = dbUpload.ProgressPercent;
+                        existing.UploadedBytes = dbUpload.UploadedBytes;
+                        existing.TotalBytes = dbUpload.TotalBytes;
+                        existing.LastError = dbUpload.LastError;
+                        existing.YouTubeVideoId = dbUpload.YouTubeVideoId;
+                        existing.YouTubeVideoUrl = dbUpload.YouTubeVideoUrl;
+                        existing.ThumbnailWarning = dbUpload.ThumbnailWarning;
+                        existing.PlaylistWarning = dbUpload.PlaylistWarning;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Ignore background sync errors
         }
     }
 
@@ -1001,7 +1069,23 @@ public partial class VideoStudioViewModel : ObservableObject
             await _uploadQueue.EnqueueAsync(uploadJob.Id);
 
             UploadJobs.Insert(0, uploadJob);
-            StatusMessage = $"'{uploadJob.Title}' YouTube yükleme kuyruğuna eklendi!";
+
+            if (_uploadService != null)
+            {
+                var val = _uploadService.ValidateJobBeforeUpload(uploadJob, checkAuth: true);
+                if (!val.IsValid)
+                {
+                    StatusMessage = $"⚠️ {val.ErrorSummary}";
+                }
+                else
+                {
+                    StatusMessage = $"'{uploadJob.Title}' YouTube yükleme kuyruğuna eklendi!";
+                }
+            }
+            else
+            {
+                StatusMessage = $"'{uploadJob.Title}' YouTube yükleme kuyruğuna eklendi!";
+            }
         }
         catch (Exception ex)
         {
@@ -1018,27 +1102,49 @@ public partial class VideoStudioViewModel : ObservableObject
     {
         if (job == null) return;
 
-        if (_uploadQueue != null && _uploadQueue.TryCancel(job.Id))
+        if (_uploadQueue != null)
         {
-            StatusMessage = $"YouTube Yüklemesi (ID: {job.Id}) iptal ediliyor...";
+            _uploadQueue.TryCancel(job.Id);
         }
-        else if (_uploadRepository != null)
+
+        if (_uploadRepository != null)
         {
-            await _uploadRepository.UpdateStatusAsync(job.Id, YouTubeUploadStatus.Cancelled, "Cancelled by user");
-            job.Status = YouTubeUploadStatus.Cancelled;
-            StatusMessage = $"YouTube Yüklemesi (ID: {job.Id}) iptal edildi.";
+            await _uploadRepository.UpdateStatusAsync(job.Id, YouTubeUploadStatus.Cancelled, "Kullanıcı tarafından iptal edildi.");
         }
+
+        job.Status = YouTubeUploadStatus.Cancelled;
+        job.LastError = "Kullanıcı tarafından iptal edildi.";
+        StatusMessage = $"YouTube Yüklemesi (ID: {job.Id}) iptal edildi.";
     }
 
     [RelayCommand]
     private async Task RetryUploadJobAsync(YouTubeUploadJob? job)
     {
-        if (job == null || _uploadRepository == null || _uploadQueue == null) return;
+        if (job == null) return;
+
+        if (_uploadService != null)
+        {
+            var val = _uploadService.ValidateJobBeforeUpload(job, checkAuth: true);
+            if (!val.IsValid)
+            {
+                StatusMessage = $"⚠️ {val.ErrorSummary}";
+            }
+        }
 
         job.Status = YouTubeUploadStatus.Pending;
         job.LastError = null;
-        await _uploadRepository.UpdateAsync(job);
-        await _uploadQueue.EnqueueAsync(job.Id);
+        job.ProgressPercent = 0.0;
+
+        if (_uploadRepository != null)
+        {
+            await _uploadRepository.UpdateAsync(job);
+        }
+
+        if (_uploadQueue != null)
+        {
+            await _uploadQueue.EnqueueAsync(job.Id);
+        }
+
         StatusMessage = $"YouTube Yükleme İşlemi (ID: {job.Id}) tekrar kuyruğa alındı.";
     }
 

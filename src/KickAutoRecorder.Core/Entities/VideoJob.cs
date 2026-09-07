@@ -1,10 +1,19 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using KickAutoRecorder.Core.Enums;
 
 namespace KickAutoRecorder.Core.Entities;
 
-public class VideoJob
+public class VideoJob : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     public int Id { get; set; }
     public int RecordingLogId { get; set; }
     public string StreamerUsername { get; set; } = string.Empty;
@@ -12,15 +21,12 @@ public class VideoJob
     public string? Description { get; set; }
     public string? Tags { get; set; }
 
-    /// <summary>
-    /// JSON array storing paths of closed segment files included in this job.
-    /// </summary>
     public string SegmentPathsJson { get; set; } = "[]";
 
     public double? TrimStartTimeSeconds { get; set; }
     public double? TrimEndTimeSeconds { get; set; }
 
-    public string ExportPreset { get; set; } = "FastCopy"; // "FastCopy", "YouTube1080p60", "YouTube4K"
+    public string ExportPreset { get; set; } = "FastCopy";
     public string? TargetResolution { get; set; }
     public int? TargetFps { get; set; }
     public int AudioBitrateKbps { get; set; } = 256;
@@ -29,9 +35,26 @@ public class VideoJob
     public string? ThumbnailPath { get; set; }
     public long FileSizeBytes { get; set; }
 
-    public VideoJobStatus Status { get; set; } = VideoJobStatus.Pending;
-    public double ProgressPercentage { get; set; }
-    public string? ErrorMessage { get; set; }
+    private VideoJobStatus _status = VideoJobStatus.Pending;
+    public VideoJobStatus Status
+    {
+        get => _status;
+        set { if (_status != value) { _status = value; OnPropertyChanged(); } }
+    }
+
+    private double _progressPercentage;
+    public double ProgressPercentage
+    {
+        get => _progressPercentage;
+        set { if (Math.Abs(_progressPercentage - value) >= 0.1) { _progressPercentage = value; OnPropertyChanged(); } }
+    }
+
+    private string? _errorMessage;
+    public string? ErrorMessage
+    {
+        get => _errorMessage;
+        set { if (_errorMessage != value) { _errorMessage = value; OnPropertyChanged(); } }
+    }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? StartedAt { get; set; }
