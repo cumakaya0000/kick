@@ -1,4 +1,4 @@
-﻿# Kick - Otomatik Yayýn Kaydedici ve YouTube Yükleyici
+# Kick - Otomatik Yayın Kaydedici ve YouTube Yükleyici
 
 ![.NET 8.0](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet)
 ![WPF](https://img.shields.io/badge/UI-WPF-0078D4?style=flat&logo=windows)
@@ -6,78 +6,78 @@
 ![FFmpeg](https://img.shields.io/badge/Encoder-FFmpeg-007808?style=flat&logo=ffmpeg)
 ![YouTube API](https://img.shields.io/badge/API-YouTube_v3-FF0000?style=flat&logo=youtube)
 
-**Kick**, Kick.com platformundaki favori yayýncýlarýnýzýn canlý yayýnlarýný arka planda otomatik olarak takip eden, yayýn baþladýðýnda **FFmpeg** ile yüksek kalitede kaydeden, stüdyo ekranýnda kesip hazýrlamanýza ve **YouTube** kanalýnýza tek týkla en yüksek kalitede otomatik yüklemenize olanak saðlayan modern bir Windows masaüstü yazýlýmýdýr.
+**Kick**, [Kick.com](https://kick.com) platformundaki favori yayıncılarınızın canlı yayınlarını arka planda otomatik olarak takip eden, yayın başladığında **FFmpeg** ile yüksek kalitede kaydeden, stüdyo ekranında kesip hazırlamanıza ve **YouTube** kanalınıza tek tıkla en yüksek kalitede otomatik yüklemenize olanak sağlayan modern bir Windows masaüstü yazılımıdır.
 
 ---
 
-## 🌟 Öne Çýkan Özellikler
+## 🌟 Öne Çıkan Özellikler
 
-- **🤖 Otomatik Kick Yayýn Takibi & Kayýt**: Arka planda çalýþarak takip ettiðiniz kanallarý izler, yayýn baþladýðý an kayda girer.
-- **🛡️ Yarýda Kalan Kayýt Kurtarma**: Elektrik kesintisi veya uygulamanýn aniden kapanmasý durumunda, yarým kalan kayýtlarý açýlýþta otomatik kurtarýr.
-- **🎬 Geliþmiþ Video Stüdyosu**: 
-  - Videolarýnýzý program içinde izleyin, istediðiniz kısımları milisaniye hassasiyetiyle kessin (Trim).
-  - Kayýtlarýnýzý bilgisayarýnýzda boþ yer kaplamamasý için tek týkla tamamen silin.
-- **🖼️ YouTube Küçük Resim (Thumbnail) Oluþturucu**: Videonun o anki karesini tek týkla YouTube kapak resmi olarak belirleyin.
-- **🚀 Akýllý YouTube Yükleyicisi**: 
-  - Render bittiðinde otomatik yükleme sýrasýna alýr.
-  - Ýnternet kopsa dahi yüklemeye **kaldýðý byte'tan (Resumable Upload)** devam eder.
-  - Videolar mümkün olan **en yüksek kalitede (10MB parçalar halinde)** yüklenir.
-- **🌙 Koyu ve Açýk Tema Desteði**: Göz yormayan, tam ekran açýlabilen modern arayüz.
-
----
-
-## 🖥️ Ekranlar ve Kullaným
-
-1. **Dashboard (Genel Bakýþ)**: Canlý yayýn yapanlar, aktif kayýtlar ve anlýk disk durumunuzu tek ekranda görün.
-2. **Yayýncýlar**: Takip etmek istediðiniz yayýncýlarý ekleyin, otomatik kaydý açýn veya kapatýn.
-3. **Kayıt Geçmişi**: Biten kayýtlarý listeleyin, oynatýn veya eski kayýtlarý silerek diskte yer açýn.
-4. **Video Studio**: Kesme, baþlýk/açýklama girme ve **Render + YouTube'a Yükle** iþlemlerini tek ekrandan yönetin.
-5. **Ayarlar**: Kayýt klasörünü seçin, YouTube hesabýnýzý baðlayýn ve temanýzý deðiþtirin.
+- **🤖 Otomatik Kick Yayın Takibi & Kayıt**: Arka planda çalışarak takip ettiğiniz kanalları izler, yayın başladığı an kayda girer.
+- **🛡️ Yarıda Kalan Kayıt Kurtarma**: Elektrik kesintisi veya uygulamanın aniden kapanması durumunda, yarım kalan kayıtları açılışta otomatik kurtarır.
+- **🎬 Gelişmiş Video Stüdyosu**: 
+  - Videolarınızı program içinde izleyin, istediğiniz kısımları milisaniye hassasiyetiyle kesin (Trim).
+  - Kayıtlarınızı bilgisayarınızda boş yer kaplamaması için tek tıkla tamamen silin.
+- **🖼️ YouTube Küçük Resim (Thumbnail) Oluşturucu**: Videonun o anki karesini tek tıkla YouTube kapak resmi olarak belirleyin.
+- **🚀 Akıllı YouTube Yükleyicisi**: 
+  - Render bittiğinde otomatik yükleme sırasına alır.
+  - İnternet kopsa dahi yüklemeye **kaldığı byte'tan (Resumable Upload)** devam eder.
+  - Videolar mümkün olan **en yüksek kalitede (~10MB parçalar halinde)** yüklenir.
+- **🌙 Koyu ve Açık Tema Desteği**: Göz yormayan, tam ekran açılabilen modern arayüz.
 
 ---
 
-## 🛠️ Kurulum Adýmlarý
+## 🖥️ Ekranlar ve Kullanım
 
-Uygulamayý kendi bilgisayarýnýza kurmak ve çalýþtýrmak çok basittir. 
+1. **Dashboard (Genel Bakış)**: Canlı yayın yapanlar, aktif kayıtlar ve anlık disk durumunuzu tek ekranda görün.
+2. **Yayıncılar**: Takip etmek istediğiniz yayıncıları ekleyin, otomatik kaydı açın veya kapatın.
+3. **Kayıt Geçmişi**: Biten kayıtları listeleyin, oynatın veya eski kayıtları silerek diskte yer açın.
+4. **Video Studio**: Kesme, başlık/açıklama girme ve **Render + YouTube'a Yükle** işlemlerini tek ekrandan yönetin.
+5. **Ayarlar**: Kayıt klasörünü seçin, YouTube hesabınızı bağlayın ve temanızı değiştirin.
+
+---
+
+## 🛠️ Kurulum Adımları
+
+Uygulamayı kendi bilgisayarınıza kurmak ve çalıştırmak çok basittir. 
 
 ### Gereksinimler
 1. **Windows 10 veya 11** (64-bit)
-2. **[.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)** yüklü olmalýdýr.
-3. **[FFmpeg](https://ffmpeg.org/download.html)** yüklü olmalýdýr. fmpeg.exe ve fprobe.exe dosyalarýný ya sistem PATH'ine ekleyin ya da uygulamanýn kurulduðu klasörün içine (veya \kayitlar\ klasörüne) atýn.
+2. **[.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)** yüklü olmalıdır.
+3. **[FFmpeg](https://ffmpeg.org/download.html)** yüklü olmalıdır. `ffmpeg.exe` ve `ffprobe.exe` dosyalarını ya sistem PATH'ine ekleyin ya da uygulamanın kurulduğu klasörün içine (veya `kayitlar` klasörüne) atın.
 
-### Adým 1: Kaynak Kodunu Ýndirin
-Git kullanarak projeyi bilgisayarýnýza kopyalayýn:
-`ash
+### Adım 1: Kaynak Kodunu İndirin
+Git kullanarak projeyi bilgisayarınıza kopyalayın:
+```bash
 git clone https://github.com/cumakaya0000/kick.git
 cd kick
-`
+```
 
-### Adým 2: Tek Týkla Kurulum (Tavsiye Edilen)
-Projenin içinde hazýrlanmýþ bir otomatik kurulum betiðimiz bulunmaktadýr. Bu betik, uygulamayý tek bir \.exe\ haline getirir ve masaüstünüze **Kick** adýyla yeni bir kýsayol oluþturur.
+### Adım 2: Tek Tıkla Kurulum (Tavsiye Edilen)
+Projenin içinde hazırlanmış bir otomatik kurulum betiğimiz bulunmaktadır. Bu betik, uygulamayı tek bir `.exe` haline getirir ve masaüstünüze **Kick** adıyla yeni bir kısayol oluşturur.
 
-1. \src\ klasörüne gidin.
+1. `src` klasörüne gidin.
 2. Terminalinizde (PowerShell) projeyi derleyin:
-   `powershell
+   ```powershell
    dotnet publish ".\KickAutoRecorder.App\KickAutoRecorder.App.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:UseAppHost=true
-   `
-3. Ardýndan otomatik yükleyiciyi çalýþtýrýn:
-   `powershell
+   ```
+3. Ardından otomatik yükleyiciyi çalıştırın:
+   ```powershell
    powershell.exe -ExecutionPolicy Bypass -File .\Install.ps1
-   `
-Bu adýmlardan sonra Masaüstünüzde **Kick** adýnda, profesyonel logosuyla birlikte bir kýsayol belirecektir. Çift týklayýp kullanmaya baþlayabilirsiniz. Denetim Masasý'ndan normal bir program gibi kaldýrabilirsiniz.
+   ```
+Bu adımlardan sonra Masaüstünüzde **Kick** adında, profesyonel logosuyla birlikte bir kısayol belirecektir. Çift tıklayıp kullanmaya başlayabilirsiniz. Denetim Masası'ndan normal bir program gibi kaldırabilirsiniz.
 
 ---
 
-## 🔑 YouTube Hesabýný Baðlama (YouTube Data API v3)
+## 🔑 YouTube Hesabını Bağlama (YouTube Data API v3)
 
-Programýn kendi kanalýnýza video yükleyebilmesi için bir kereliðine API yetkilendirmesi yapmanýz gerekir. Endiþelenmeyin, bu anahtarlar sadece **sizin kendi bilgisayarýnýzda** þifreli olarak saklanýr.
+Programın kendi kanalınıza video yükleyebilmesi için bir kereliğine API yetkilendirmesi yapmanız gerekir. Endişelenmeyin, bu anahtarlar sadece **sizin kendi bilgisayarınızda** şifreli olarak saklanır.
 
 1. [Google Cloud Console](https://console.cloud.google.com/)'a gidin.
-2. Yeni bir proje oluþturun.
-3. **APIs & Services -> Library** (Kütüphane) bölümünden **YouTube Data API v3**'ü bulup **Etkinleþtirin (Enable)**.
-4. **OAuth consent screen (Onay Ekraný)**'na gidin, **External (Dýþ)** seçin. Test kullanýcýsý olarak kendi Gmail/YouTube adresinizi eklemeyi unutmayýn.
-5. **Credentials (Kimlik Bilgileri) -> Create Credentials -> OAuth client ID** yolunu izleyin. Uygulama türü olarak **Desktop App (Masaüstü Uygulamasý)** seçin.
-6. Size verilen **Client ID (Ýstemci Kimliði)** ve **Client Secret (Ýstemci Gizli Anahtarý)** bilgilerini kopyalayýn.
-7. Kick uygulamasýný açýn, **Ayarlar** sekmesine gelin. Kopyaladýðýnýz bilgileri ilgili yerlere yapýþtýrýp **Hesabý Baðla** butonuna basýn.
+2. Yeni bir proje oluşturun.
+3. **APIs & Services -> Library** (Kütüphane) bölümünden **YouTube Data API v3**'ü bulup **Etkinleştirin (Enable)**.
+4. **OAuth consent screen (Onay Ekranı)**'na gidin, **External (Dış)** seçin. Test kullanıcısı olarak kendi Gmail/YouTube adresinizi eklemeyi unutmayın.
+5. **Credentials (Kimlik Bilgileri) -> Create Credentials -> OAuth client ID** yolunu izleyin. Uygulama türü olarak **Desktop App (Masaüstü Uygulaması)** seçin.
+6. Size verilen **Client ID (İstemci Kimliği)** ve **Client Secret (İstemci Gizli Anahtarı)** bilgilerini kopyalayın.
+7. Kick uygulamasını açın, **Ayarlar** sekmesine gelin. Kopyaladığınız bilgileri ilgili yerlere yapıştırıp **Hesabı Bağla** butonuna basın.
 
-Artýk Stüdyo ekranýndan tek týkla kendi kanalýnýza otomatik video yükleyebilirsiniz! Videolarınız varsayılan olarak **Gizli (Private)** olarak yüklenir, siz hazır olduğunuzda yayınlayabilirsiniz.
+Artık Stüdyo ekranından tek tıkla kendi kanalınıza otomatik video yükleyebilirsiniz! Videolarınız varsayılan olarak **Gizli (Private)** olarak yüklenir, siz hazır olduğunuzda yayınlayabilirsiniz.
