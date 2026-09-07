@@ -7,6 +7,8 @@
         xmlns:converters="clr-namespace:KickAutoRecorder.App.Converters"
         mc:Ignorable="d"
         Title="{Binding AppName}" Height="750" Width="1150"
+        Icon="/app.ico"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}">
     <Window.Resources>
@@ -99,7 +101,15 @@
 
                     <Button Command="{Binding RefreshStatusCommand}" 
                             Content="Sistem Durumunu Yenile" Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource TextSecondaryBrush}" 
-                            Padding="14,7" FontSize="12" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" Cursor="Hand">
+                            Padding="14,7" FontSize="12" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" Cursor="Hand" Margin="0,0,8,0">
+                        <Button.Resources>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Button Command="{Binding ExitAppCommand}" 
+                            Content="Kapat" Background="#EF4444" Foreground="White" 
+                            Padding="14,7" FontSize="12" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
                         </Button.Resources>

@@ -158,11 +158,7 @@ public class RecordingOrchestrator : IRecordingOrchestrator
 
         try
         {
-            // Step 1: Orphan FFmpeg Process Detection & Cleanup
-            var runningFFmpegProcesses = Process.GetProcessesByName("ffmpeg");
-            _logger.LogInformation("Detected {Count} running FFmpeg processes on system startup.", runningFFmpegProcesses.Length);
-
-            // Step 2: Idempotent Query - Fetches ONLY logs stuck in Recording or Pending status
+            // Step 1 & 2: Idempotent Query - Fetches ONLY logs stuck in Recording or Pending status
             var activeLogs = await _recordingLogRepository.GetActiveRecordingsAsync(cancellationToken);
             var orphanedLogs = activeLogs.ToList();
 
@@ -179,20 +175,25 @@ public class RecordingOrchestrator : IRecordingOrchestrator
                 _logger.LogInformation("Processing crash recovery for LogId {LogId} (Streamer: '{Username}', File: '{FilePath}')...",
                     log.Id, log.StreamerUsername, log.FilePath);
 
-                // Step 3: Terminate orphan FFmpeg processes from previous crashed sessions
-                foreach (var proc in runningFFmpegProcesses)
+                // Step 3: Targeted Orphan FFmpeg Process Cleanup via ProcessId
+                if (log.ProcessId.HasValue)
                 {
                     try
                     {
-                        if (!proc.HasExited)
+                        var proc = Process.GetProcessById(log.ProcessId.Value);
+                        if (proc != null && !proc.HasExited && proc.ProcessName.Contains("ffmpeg", StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.LogWarning("Terminating orphaned FFmpeg process (PID: {Pid}) for streamer {Username}...", proc.Id, log.StreamerUsername);
+                            _logger.LogWarning("Terminating orphaned FFmpeg process (PID: {Pid}) for streamer {Username}...", log.ProcessId.Value, log.StreamerUsername);
                             proc.Kill(entireProcessTree: true);
                         }
                     }
+                    catch (ArgumentException)
+                    {
+                        // Process is not running, which is fine
+                    }
                     catch (Exception procEx)
                     {
-                        _logger.LogDebug(procEx, "Ignored process termination error for PID {Pid}", proc.Id);
+                        _logger.LogDebug(procEx, "Ignored process termination error for PID {Pid}", log.ProcessId.Value);
                     }
                 }
 

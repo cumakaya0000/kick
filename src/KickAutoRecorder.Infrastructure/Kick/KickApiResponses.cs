@@ -28,6 +28,9 @@ public class KickLivestreamResponse
     [JsonPropertyName("slug")]
     public string Slug { get; set; } = string.Empty;
 
+    [JsonPropertyName("is_live")]
+    public bool IsLive { get; set; }
+
     [JsonPropertyName("session_title")]
     public string? SessionTitle { get; set; }
 

@@ -157,12 +157,16 @@ public class FFmpegRecordingEngine : IRecordingEngine, IDisposable
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = ffmpegPath,
-                Arguments = arguments,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
                 RedirectStandardInput = true
             };
+
+            foreach (var arg in arguments)
+            {
+                processStartInfo.ArgumentList.Add(arg);
+            }
 
             var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -210,6 +214,18 @@ public class FFmpegRecordingEngine : IRecordingEngine, IDisposable
             _activeRecordings.TryAdd(log.Id, context);
             process.Start();
             process.BeginErrorReadLine();
+            
+            try
+            {
+                log.ProcessId = process.Id;
+                using var pScope = _scopeFactory.CreateScope();
+                var pRepo = pScope.ServiceProvider.GetRequiredService<IRecordingLogRepository>();
+                await pRepo.UpdateAsync(log, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to save ProcessId {Pid} to database for LogId {LogId}", process.Id, log.Id);
+            }
 
             _sessionStates[streamer.Id] = RecordingSessionState.Recording;
             UpdateManifest(context);
@@ -624,27 +640,56 @@ public class FFmpegRecordingEngine : IRecordingEngine, IDisposable
         }
     }
 
-    public string BuildFFmpegArguments(string streamUrl, string outputSegmentPattern, string quality = "En Yüksek (Kaynak)")
+    public List<string> BuildFFmpegArguments(string streamUrl, string outputSegmentPattern, string quality = "En Yüksek (Kaynak)")
     {
-        var mapArgs = string.Empty;
+        var args = new List<string>
+        {
+            "-y",
+            "-headers",
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36\r\nReferer: https://kick.com/\r\nOrigin: https://kick.com\r\n",
+            "-fflags",
+            "+genpts+discardcorrupt",
+            "-avoid_negative_ts",
+            "make_zero",
+            "-i",
+            streamUrl
+        };
+
         if (!string.IsNullOrWhiteSpace(quality))
         {
             var q = quality.ToLowerInvariant();
             if (q.Contains("720"))
             {
-                mapArgs = " -map 0:v:1? -map 0:a:0?";
+                args.Add("-map"); args.Add("0:v:1?");
+                args.Add("-map"); args.Add("0:a:0?");
             }
             else if (q.Contains("480"))
             {
-                mapArgs = " -map 0:v:2? -map 0:a:0?";
+                args.Add("-map"); args.Add("0:v:2?");
+                args.Add("-map"); args.Add("0:a:0?");
             }
             else if (q.Contains("360"))
             {
-                mapArgs = " -map 0:v:3? -map 0:a:0?";
+                args.Add("-map"); args.Add("0:v:3?");
+                args.Add("-map"); args.Add("0:a:0?");
             }
         }
 
-        return $"-y -headers \"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36\r\nReferer: https://kick.com/\r\nOrigin: https://kick.com\r\n\" -fflags +genpts+discardcorrupt -avoid_negative_ts make_zero -i \"{streamUrl}\"{mapArgs} -c copy -bsf:a aac_adtstoasc -movflags +faststart+frag_keyframe+empty_moov -f segment -segment_time 1800 -segment_format mp4 -reset_timestamps 1 -break_non_keyframes 1 -segment_start_number 1 \"{outputSegmentPattern}\"";
+        args.AddRange(new[]
+        {
+            "-c", "copy",
+            "-bsf:a", "aac_adtstoasc",
+            "-movflags", "+faststart+frag_keyframe+empty_moov",
+            "-f", "segment",
+            "-segment_time", "1800",
+            "-segment_format", "mp4",
+            "-reset_timestamps", "1",
+            "-break_non_keyframes", "1",
+            "-segment_start_number", "1",
+            outputSegmentPattern
+        });
+
+        return args;
     }
 
     public void Dispose()

@@ -48,8 +48,13 @@ public class RecordingLogRepository : IRecordingLogRepository
     public async Task UpdateAsync(RecordingLog log, CancellationToken cancellationToken = default)
     {
         await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        context.RecordingLogs.Update(log);
-        await context.SaveChangesAsync(cancellationToken);
+        
+        var existing = await context.RecordingLogs.FindAsync(new object[] { log.Id }, cancellationToken);
+        if (existing != null)
+        {
+            context.Entry(existing).CurrentValues.SetValues(log);
+            await context.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)

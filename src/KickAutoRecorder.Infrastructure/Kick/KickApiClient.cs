@@ -101,7 +101,9 @@ public class KickApiClient : IKickApiClient
                 );
             }
 
-            var isLive = channelData.Livestream != null;
+            // Kick API can return a non-null livestream object even when offline (with last stream data).
+            // Must explicitly check the is_live field to determine actual live status.
+            var isLive = channelData.Livestream != null && channelData.Livestream.IsLive;
             var status = isLive ? StreamStatus.Live : StreamStatus.Offline;
 
             var title = channelData.Livestream?.SessionTitle 

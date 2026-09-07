@@ -1,10 +1,12 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Google.Apis.YouTube.v3;
 using KickAutoRecorder.Core.Enums;
 using KickAutoRecorder.Core.Interfaces;
 
@@ -38,6 +40,8 @@ public class YouTubeUploadWorker : BackgroundService
         {
             using var startupScope = _scopeFactory.CreateScope();
             var repo = startupScope.ServiceProvider.GetRequiredService<IYouTubeUploadRepository>();
+            var authService = startupScope.ServiceProvider.GetRequiredService<IYouTubeAuthService>();
+            
             var activeJobs = await repo.GetPendingOrUploadingJobsAsync(stoppingToken);
 
             foreach (var job in activeJobs)
@@ -50,9 +54,45 @@ public class YouTubeUploadWorker : BackgroundService
                     }
                     else
                     {
-                        _logger.LogInformation("Recovered unfinished YouTube upload Job ID {JobId} from application restart.", job.Id);
-                        await repo.UpdateStatusAsync(job.Id, YouTubeUploadStatus.Pending, cancellationToken: stoppingToken);
-                        await _uploadQueue.EnqueueAsync(job.Id, stoppingToken);
+                        _logger.LogInformation("Recovered unfinished YouTube upload Job ID {JobId} from application restart. Verifying idempotency with YouTube API...", job.Id);
+                        
+                        // Idempotency Check: Verify if video was actually uploaded right before the crash
+                        bool isAlreadyUploaded = false;
+                        try
+                        {
+                            var yt = await authService.GetYouTubeServiceAsync(stoppingToken);
+                            if (yt != null)
+                            {
+                                var searchReq = yt.Search.List("snippet");
+                                searchReq.ForMine = true;
+                                searchReq.Type = "video";
+                                searchReq.Q = job.Title;
+                                searchReq.MaxResults = 5;
+                                
+                                var searchResp = await searchReq.ExecuteAsync(stoppingToken);
+                                var match = searchResp.Items?.FirstOrDefault(i => string.Equals(i.Snippet.Title, job.Title, StringComparison.OrdinalIgnoreCase));
+                                
+                                if (match != null && !string.IsNullOrEmpty(match.Id?.VideoId))
+                                {
+                                    _logger.LogWarning("Idempotency Check MATCH: Job ID {JobId} was already uploaded as VideoId {VideoId}. Preventing duplicate.", job.Id, match.Id.VideoId);
+                                    job.YouTubeVideoId = match.Id.VideoId;
+                                    job.YouTubeVideoUrl = $"https://www.youtube.com/watch?v={match.Id.VideoId}";
+                                    job.Status = YouTubeUploadStatus.Completed;
+                                    await repo.UpdateAsync(job, stoppingToken);
+                                    isAlreadyUploaded = true;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to verify YouTube idempotency for Job ID {JobId}. Assuming it failed and retrying.", job.Id);
+                        }
+
+                        if (!isAlreadyUploaded)
+                        {
+                            await repo.UpdateStatusAsync(job.Id, YouTubeUploadStatus.Pending, cancellationToken: stoppingToken);
+                            await _uploadQueue.EnqueueAsync(job.Id, stoppingToken);
+                        }
                     }
                 }
                 else if (job.Status == YouTubeUploadStatus.Pending || job.Status == YouTubeUploadStatus.RetryScheduled)

@@ -77,11 +77,15 @@ public class FFmpegRecordingEngineTests
 
         var args = engine.BuildFFmpegArguments(streamUrl, outputPath);
 
-        Assert.Contains("-c copy", args);
-        Assert.Contains("-bsf:a aac_adtstoasc", args);
-        Assert.Contains("-fflags +genpts+discardcorrupt", args);
-        Assert.Contains("-avoid_negative_ts make_zero", args);
-        Assert.Contains("User-Agent", args);
+        Assert.Contains("-c", args);
+        Assert.Contains("copy", args);
+        Assert.Contains("-bsf:a", args);
+        Assert.Contains("aac_adtstoasc", args);
+        Assert.Contains("-fflags", args);
+        Assert.Contains("+genpts+discardcorrupt", args);
+        Assert.Contains("-avoid_negative_ts", args);
+        Assert.Contains("make_zero", args);
+        Assert.Contains("-headers", args);
         Assert.Contains(streamUrl, args);
         Assert.Contains(outputPath, args);
     }

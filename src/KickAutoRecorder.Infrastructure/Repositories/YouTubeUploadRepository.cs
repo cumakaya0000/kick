@@ -72,8 +72,12 @@ public class YouTubeUploadRepository : IYouTubeUploadRepository
     public async Task UpdateAsync(YouTubeUploadJob job, CancellationToken cancellationToken = default)
     {
         await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        context.Set<YouTubeUploadJob>().Update(job);
-        await context.SaveChangesAsync(cancellationToken);
+        var existing = await context.Set<YouTubeUploadJob>().FindAsync(new object[] { job.Id }, cancellationToken);
+        if (existing != null)
+        {
+            context.Entry(existing).CurrentValues.SetValues(job);
+            await context.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task UpdateStatusAsync(int id, YouTubeUploadStatus status, string? errorMessage = null, CancellationToken cancellationToken = default)

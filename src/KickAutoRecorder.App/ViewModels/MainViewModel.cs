@@ -19,7 +19,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly ISettingsService _settingsService;
 
     [ObservableProperty]
-    private string _appName = "KickVideo (KickAutoRecorder)";
+    private string _appName = "Kick";
 
     [ObservableProperty]
     private string _systemStatus = "Initializing Core Systems...";
@@ -178,6 +178,23 @@ public partial class MainViewModel : ObservableObject, IDisposable
             HealthSegmentCount = telemetry.SegmentCount;
             HealthFFmpegState = telemetry.FFmpegStatus;
         });
+    }
+
+    [RelayCommand]
+    private void ExitApp()
+    {
+        try
+        {
+            // Arka plandaki işlemleri (özellikle FFmpeg derlemelerini) zorla sonlandır
+            foreach (var process in System.Diagnostics.Process.GetProcessesByName("ffmpeg"))
+            {
+                try { process.Kill(); } catch { }
+            }
+        }
+        catch { }
+
+        // Uygulamayı tamamen sonlandır
+        Environment.Exit(0);
     }
 
     [RelayCommand]

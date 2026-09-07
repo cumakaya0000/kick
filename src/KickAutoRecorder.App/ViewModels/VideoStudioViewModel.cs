@@ -57,6 +57,9 @@ public partial class VideoStudioViewModel : ObservableObject
     [ObservableProperty]
     private VideoExportProfile? _selectedProfile;
 
+    [ObservableProperty]
+    private bool _isLeftPanelVisible = true;
+
     // YouTube Metadata Properties
     [ObservableProperty]
     private string _title = string.Empty;
@@ -168,7 +171,8 @@ public partial class VideoStudioViewModel : ObservableObject
         {
             VideoExportProfile.FastCopy,
             VideoExportProfile.Accurate1080p60,
-            VideoExportProfile.YouTube4K
+            VideoExportProfile.YouTube4K,
+            VideoExportProfile.YouTubeShorts
         };
         SelectedProfile = ExportProfiles.First();
 
@@ -460,6 +464,38 @@ public partial class VideoStudioViewModel : ObservableObject
         OutputFileName = string.Empty;
 
         StatusMessage = "Kayıt seçimi temizlendi (Geri adım atıldı).";
+    }
+
+    [RelayCommand]
+    private async Task DeleteRecordingAsync(RecordingLog? log)
+    {
+        if (log == null) return;
+
+        try
+        {
+            if (File.Exists(log.FilePath))
+            {
+                File.Delete(log.FilePath);
+            }
+            else if (Directory.Exists(log.FilePath))
+            {
+                Directory.Delete(log.FilePath, true);
+            }
+
+            await _logRepository.DeleteAsync(log.Id);
+            Recordings.Remove(log);
+
+            if (SelectedRecording?.Id == log.Id)
+            {
+                ClearSelection();
+            }
+
+            StatusMessage = "Kayıt dosyası ve veritabanı kaydı silindi.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Silme hatası: {ex.Message}";
+        }
     }
 
     [RelayCommand]
@@ -785,7 +821,19 @@ public partial class VideoStudioViewModel : ObservableObject
                 return;
             }
 
-            var fullOutputPath = Path.Combine(OutputFolder, OutputFileName);
+            var safeFileName = Path.GetFileName(OutputFileName);
+            if (string.IsNullOrWhiteSpace(safeFileName)) safeFileName = "output.mp4";
+            if (!safeFileName.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) safeFileName += ".mp4";
+            
+            var fullOutputPath = Path.GetFullPath(Path.Combine(OutputFolder, safeFileName));
+            var rootFolder = Path.GetFullPath(OutputFolder);
+            if (!rootFolder.EndsWith(Path.DirectorySeparatorChar.ToString())) rootFolder += Path.DirectorySeparatorChar;
+            
+            if (!fullOutputPath.StartsWith(rootFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                StatusMessage = "Hata: Geçersiz dosya adı! Belirtilen dizin dışına çıkılamaz.";
+                return;
+            }
 
             foreach (var seg in prep.ClosedSegmentPaths)
             {
@@ -870,6 +918,29 @@ public partial class VideoStudioViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task DeleteJobAsync(VideoJob? job)
+    {
+        if (job == null) return;
+        
+        try
+        {
+            if (job.Status == VideoJobStatus.Pending || job.Status == VideoJobStatus.Rendering || job.Status == VideoJobStatus.Validating)
+            {
+                StatusMessage = "Hata: Devam eden işler silinemez, önce iptal edin.";
+                return;
+            }
+
+            await _jobRepository.DeleteAsync(job.Id);
+            Jobs.Remove(job);
+            StatusMessage = "Render işi başarıyla silindi.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Silme hatası: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private async Task EnqueueRenderAndUploadAsync()
     {
         if (SelectedRecording == null)
@@ -919,7 +990,19 @@ public partial class VideoStudioViewModel : ObservableObject
                 return;
             }
 
-            var fullOutputPath = Path.Combine(OutputFolder, OutputFileName);
+            var safeFileName = Path.GetFileName(OutputFileName);
+            if (string.IsNullOrWhiteSpace(safeFileName)) safeFileName = "output.mp4";
+            if (!safeFileName.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) safeFileName += ".mp4";
+            
+            var fullOutputPath = Path.GetFullPath(Path.Combine(OutputFolder, safeFileName));
+            var rootFolder = Path.GetFullPath(OutputFolder);
+            if (!rootFolder.EndsWith(Path.DirectorySeparatorChar.ToString())) rootFolder += Path.DirectorySeparatorChar;
+            
+            if (!fullOutputPath.StartsWith(rootFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                StatusMessage = "Hata: Geçersiz dosya adı! Belirtilen dizin dışına çıkılamaz.";
+                return;
+            }
 
             foreach (var seg in prep.ClosedSegmentPaths)
             {
@@ -1115,6 +1198,32 @@ public partial class VideoStudioViewModel : ObservableObject
         job.Status = YouTubeUploadStatus.Cancelled;
         job.LastError = "Kullanıcı tarafından iptal edildi.";
         StatusMessage = $"YouTube Yüklemesi (ID: {job.Id}) iptal edildi.";
+    }
+
+    [RelayCommand]
+    private async Task DeleteUploadJobAsync(YouTubeUploadJob? job)
+    {
+        if (job == null) return;
+
+        try
+        {
+            if (job.Status == YouTubeUploadStatus.Pending || job.Status == YouTubeUploadStatus.Uploading || job.Status == YouTubeUploadStatus.WaitingForRender)
+            {
+                StatusMessage = "Hata: Devam eden yüklemeler silinemez, önce iptal edin.";
+                return;
+            }
+
+            if (_uploadRepository != null)
+            {
+                await _uploadRepository.DeleteAsync(job.Id);
+            }
+            UploadJobs.Remove(job);
+            StatusMessage = "YouTube yükleme işi başarıyla silindi.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Silme hatası: {ex.Message}";
+        }
     }
 
     [RelayCommand]

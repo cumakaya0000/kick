@@ -136,8 +136,8 @@ public class YouTubeUploadService : IYouTubeUploadService
         _logger.LogInformation("Starting Resumable YouTube Video Upload for Job ID {JobId}: '{Title}' ({Size:N0} bytes, Privacy: {Privacy})",
             job.Id, job.Title, totalBytes, video.Status.PrivacyStatus);
 
-        var insertRequest = youtubeService.Videos.Insert(video, "snippet,status", fileStream, "video/*");
-        insertRequest.ChunkSize = ResumableUpload.MinimumChunkSize * 4; // 1MB chunks
+        var insertRequest = youtubeService.Videos.Insert(video, "snippet,status", fileStream, "video/mp4");
+        insertRequest.ChunkSize = ResumableUpload.MinimumChunkSize * 40; // ~10MB chunks for better quality processing
 
         Video? uploadedVideo = null;
         Exception? uploadException = null;

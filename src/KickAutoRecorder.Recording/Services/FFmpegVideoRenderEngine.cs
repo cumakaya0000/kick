@@ -210,48 +210,79 @@ public class FFmpegVideoRenderEngine : IVideoRenderEngine
         }
     }
 
-    private string BuildFFmpegArguments(string concatTxtPath, string tempOutputPath, bool isFastCopy, VideoJob job)
+    private List<string> BuildFFmpegArguments(string concatTxtPath, string tempOutputPath, bool isFastCopy, VideoJob job)
     {
-        var ssArg = string.Empty;
-        var toArg = string.Empty;
+        var args = new List<string> { "-y" };
 
         if (job.TrimStartTimeSeconds.HasValue && job.TrimStartTimeSeconds.Value > 0)
         {
-            ssArg = $"-ss {TimeSpan.FromSeconds(job.TrimStartTimeSeconds.Value):hh\\:mm\\:ss\\.fff} ";
+            args.Add("-ss");
+            args.Add(TimeSpan.FromSeconds(job.TrimStartTimeSeconds.Value).ToString("hh\\:mm\\:ss\\.fff"));
         }
+
+        args.AddRange(new[] { "-f", "concat", "-safe", "0", "-i", concatTxtPath });
+
         if (job.TrimEndTimeSeconds.HasValue && job.TrimEndTimeSeconds.Value > 0)
         {
-            toArg = $"-to {TimeSpan.FromSeconds(job.TrimEndTimeSeconds.Value):hh\\:mm\\:ss\\.fff} ";
+            args.Add("-to");
+            args.Add(TimeSpan.FromSeconds(job.TrimEndTimeSeconds.Value).ToString("hh\\:mm\\:ss\\.fff"));
         }
 
         if (isFastCopy)
         {
-            return $"-y {ssArg}-f concat -safe 0 -i \"{concatTxtPath}\" {toArg}-c copy -movflags +faststart \"{tempOutputPath}\"";
+            args.AddRange(new[] { "-c", "copy", "-movflags", "+faststart", tempOutputPath });
+            return args;
         }
         else
         {
             var audioBitrate = job.AudioBitrateKbps > 0 ? job.AudioBitrateKbps : 256;
-            var filterArgs = string.Empty;
 
             if (!string.IsNullOrWhiteSpace(job.TargetResolution))
             {
                 var res = job.TargetResolution.ToLowerInvariant().Replace("x", ":");
-                filterArgs += $" -vf scale={res}";
+                args.Add("-vf");
+                
+                if (job.TargetResolution == "1080x1920")
+                {
+                    // Scale to fit height, crop width to center (Standard Shorts format)
+                    args.Add("scale=-1:1920,crop=1080:1920");
+                }
+                else
+                {
+                    args.Add($"scale={res}");
+                }
             }
 
-            var fpsArg = string.Empty;
             if (job.TargetFps.HasValue && job.TargetFps.Value > 0)
             {
-                fpsArg = $" -r {job.TargetFps.Value}";
+                args.Add("-r");
+                args.Add(job.TargetFps.Value.ToString());
             }
 
-            return $"-y {ssArg}-f concat -safe 0 -i \"{concatTxtPath}\" {toArg}{filterArgs}{fpsArg} -c:v libx264 -preset medium -crf 18 -c:a aac -b:a {audioBitrate}k -movflags +faststart \"{tempOutputPath}\"";
+            args.AddRange(new[]
+            {
+                "-c:v", "libx264",
+                "-profile:v", "high",
+                "-level:v", "4.2",
+                "-pix_fmt", "yuv420p",
+                "-preset", "medium",
+                "-crf", "16",
+                "-bf", "2",
+                "-g", "120",
+                "-c:a", "aac",
+                "-b:a", $"{audioBitrate}k",
+                "-ar", "48000",
+                "-movflags", "+faststart",
+                tempOutputPath
+            });
+
+            return args;
         }
     }
 
     private async Task<bool> RunFFmpegProcessAsync(
         string ffmpegExe,
-        string arguments,
+        List<string> arguments,
         VideoJob job,
         TimeSpan totalExpectedDuration,
         string tempOutputPath,
@@ -260,11 +291,15 @@ public class FFmpegVideoRenderEngine : IVideoRenderEngine
         var startInfo = new ProcessStartInfo
         {
             FileName = ffmpegExe,
-            Arguments = arguments,
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardError = true
         };
+
+        foreach (var arg in arguments)
+        {
+            startInfo.ArgumentList.Add(arg);
+        }
 
         using var process = new Process { StartInfo = startInfo };
 

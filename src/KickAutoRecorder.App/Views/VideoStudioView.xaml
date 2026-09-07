@@ -7,17 +7,23 @@
              mc:Ignorable="d" 
              d:DesignHeight="820" d:DesignWidth="1200">
 
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
     <Grid Margin="15">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="290"/> <!-- Sol Panel: Kayıtlı Videolar -->
-            <ColumnDefinition Width="15"/>
-            <ColumnDefinition Width="*"/>   <!-- Orta Panel: Video Preview & Timeline -->
-            <ColumnDefinition Width="15"/>
-            <ColumnDefinition Width="360"/> <!-- Sağ Panel: Export & YouTube Metadata & Queue -->
+            <ColumnDefinition Width="Auto"/> <!-- Sol Panel -->
+            <ColumnDefinition Width="*"/>    <!-- Orta Panel -->
+            <ColumnDefinition Width="Auto"/> <!-- Right Splitter -->
+            <ColumnDefinition Width="360" MinWidth="250" MaxWidth="800"/>  <!-- Sağ Panel -->
         </Grid.ColumnDefinitions>
 
+        <!-- Right Panel Splitter -->
+        <GridSplitter Grid.Column="2" Width="15" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="Transparent" ShowsPreview="True" Cursor="SizeWE" ToolTip="Paneli Genişlet/Daralt"/>
+
         <!-- SOL PANEL: Kayıtlı Videolar Listesi -->
-        <Border Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12">
+        <Border Grid.Column="0" Margin="0,0,15,0" Width="290" Visibility="{Binding IsLeftPanelVisible, Converter={StaticResource BoolToVis}}" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -36,7 +42,9 @@
                     </StackPanel>
                 </Grid>
 
-                <ListBox Grid.Row="1" ItemsSource="{Binding Recordings}" SelectedItem="{Binding SelectedRecording}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox Grid.Row="1" ItemsSource="{Binding Recordings}" SelectedItem="{Binding SelectedRecording}" 
+                         Background="Transparent" BorderThickness="0"
+                         HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Border Background="#1E293B" CornerRadius="6" Padding="10" Margin="0,0,0,8" BorderBrush="#334155" BorderThickness="1">
@@ -51,10 +59,21 @@
                                         <TextBlock Grid.Column="0" Text="{Binding StartedAt, StringFormat={}{0:dd.MM.yyyy HH:mm}}" FontSize="11" Foreground="#94A3B8"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Resolution}" FontSize="11" Foreground="#A7F3D0" FontWeight="SemiBold"/>
                                     </Grid>
-                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                        <TextBlock Text="{Binding FileSizeBytes, StringFormat={}{0:N0} B}" FontSize="10" Foreground="#64748B" Margin="0,0,8,0"/>
-                                        <TextBlock Text="{Binding Status}" FontSize="10" Foreground="#F59E0B" FontWeight="Bold"/>
-                                    </StackPanel>
+                                    <Grid Margin="0,4,0,0">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding FileSizeBytes, StringFormat={}{0:N0} B}" FontSize="10" Foreground="#64748B" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Status}" FontSize="10" Foreground="#F59E0B" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <Button HorizontalAlignment="Right"
+                                                Command="{Binding DataContext.DeleteRecordingCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                CommandParameter="{Binding}"
+                                                Content="Sil" Background="#EF4444" Foreground="White" 
+                                                Padding="8,2" FontSize="10" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand">
+                                            <Button.Resources>
+                                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </Grid>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
@@ -64,16 +83,30 @@
         </Border>
 
         <!-- ORTA PANEL: Video Preview & Timeline Trim -->
-        <Grid Grid.Column="2">
+        <Grid Grid.Column="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Top Toolbar -->
                 <RowDefinition Height="*"/>    <!-- Video Player -->
                 <RowDefinition Height="Auto"/> <!-- Player Controls -->
                 <RowDefinition Height="10"/>
                 <RowDefinition Height="Auto"/> <!-- Bottom Timeline Trim Controls -->
             </Grid.RowDefinitions>
 
+            <!-- Toggle Left Sidebar Button -->
+            <ToggleButton Grid.Row="0" HorizontalAlignment="Left" Margin="0,0,0,10" 
+                          IsChecked="{Binding IsLeftPanelVisible}"
+                          Padding="10,5" Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" ToolTip="Kayıtlı Videolar panelini göster/gizle">
+                <ToggleButton.Resources>
+                    <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                </ToggleButton.Resources>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="☰" FontSize="16" FontWeight="Bold" Margin="0,0,6,0"/>
+                    <TextBlock Text="Videolar" VerticalAlignment="Center"/>
+                </StackPanel>
+            </ToggleButton>
+
             <!-- MediaElement Player Card -->
-            <Border Grid.Row="0" Background="#000000" CornerRadius="8" ClipToBounds="True">
+            <Border Grid.Row="1" Background="#000000" CornerRadius="8" ClipToBounds="True">
                 <Grid>
                     <MediaElement x:Name="MediaPlayer" 
                                   Source="{Binding VideoSourceUri}" 
@@ -84,19 +117,26 @@
                 </Grid>
             </Border>
 
-            <!-- Player Oynatma Kontrolleri -->
-            <Border Grid.Row="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="6" Padding="10,6" Margin="0,8,0,0">
+            <Border Grid.Row="2" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="6" Padding="10,6" Margin="0,8,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="Auto"/> <!-- Play/Pause -->
+                        <ColumnDefinition Width="Auto"/> <!-- Skip Buttons -->
+                        <ColumnDefinition Width="*"/>    <!-- Slider -->
+                        <ColumnDefinition Width="Auto"/> <!-- Position -->
+                        <ColumnDefinition Width="Auto"/> <!-- Quick Trim Actions -->
+                        <ColumnDefinition Width="100"/>  <!-- Volume -->
                     </Grid.ColumnDefinitions>
 
-                    <Button x:Name="BtnPlay" Grid.Column="0" Content="▶ Oynat" Click="BtnPlay_Click" Margin="0,0,6,0" Padding="10,4" Background="#10B981" Foreground="White" FontWeight="Bold"/>
-                    <Button x:Name="BtnPause" Grid.Column="1" Content="⏸ Duraklat" Click="BtnPause_Click" Margin="0,0,12,0" Padding="10,4" Background="#64748B" Foreground="White"/>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Button x:Name="BtnPlay" Content="▶ Oynat" Click="BtnPlay_Click" Margin="0,0,6,0" Padding="10,4" Background="#10B981" Foreground="White" FontWeight="Bold"/>
+                        <Button x:Name="BtnPause" Content="⏸ Duraklat" Click="BtnPause_Click" Margin="0,0,6,0" Padding="10,4" Background="#64748B" Foreground="White"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,0">
+                        <Button x:Name="BtnBackward" Content="⏪ -10s" Click="BtnBackward_Click" Margin="0,0,4,0" Padding="6,4" Background="#334155" Foreground="White" FontSize="11" ToolTip="10 saniye geri sar"/>
+                        <Button x:Name="BtnForward" Content="⏩ +10s" Click="BtnForward_Click" Padding="6,4" Background="#334155" Foreground="White" FontSize="11" ToolTip="10 saniye ileri sar"/>
+                    </StackPanel>
 
                     <!-- Timeline Slider -->
                     <Slider x:Name="TimelineSlider" Grid.Column="2" VerticalAlignment="Center" 
@@ -105,19 +145,25 @@
                             ValueChanged="TimelineSlider_ValueChanged"/>
 
                     <!-- Position Display -->
-                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,15,0">
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,10,0">
                         <TextBlock Text="{Binding CurrentPositionText}" FontWeight="Bold" Foreground="#38BDF8"/>
                         <TextBlock Text=" / " Foreground="#64748B"/>
                         <TextBlock Text="{Binding TotalDurationText}" Foreground="#94A3B8"/>
                     </StackPanel>
+                    
+                    <!-- Quick Trim Actions -->
+                    <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="0,0,15,0">
+                        <Button Content="[ Başlangıç Seç" Command="{Binding SetTrimStartFromCurrentPositionCommand}" Margin="0,0,4,0" Padding="8,4" Background="#0284C7" Foreground="White" FontSize="11" FontWeight="Bold" ToolTip="Kırpma başlangıç noktasını buraya ayarla"/>
+                        <Button Content="Bitiş Seç ]" Command="{Binding SetTrimEndFromCurrentPositionCommand}" Padding="8,4" Background="#0284C7" Foreground="White" FontSize="11" FontWeight="Bold" ToolTip="Kırpma bitiş noktasını buraya ayarla"/>
+                    </StackPanel>
 
                     <!-- Volume Control -->
-                    <Slider x:Name="VolumeSlider" Grid.Column="4" VerticalAlignment="Center" Minimum="0" Maximum="1" Value="0.8" ValueChanged="VolumeSlider_ValueChanged"/>
+                    <Slider x:Name="VolumeSlider" Grid.Column="5" VerticalAlignment="Center" Minimum="0" Maximum="1" Value="0.8" ValueChanged="VolumeSlider_ValueChanged" ToolTip="Ses Seviyesi"/>
                 </Grid>
             </Border>
 
             <!-- ALT TIMELINE: Kırpma (Trim) İki Modlu Zaman Paneli -->
-            <Border Grid.Row="3" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12">
+            <Border Grid.Row="4" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12">
                 <StackPanel>
                     <Grid Margin="0,0,0,8">
                         <TextBlock Text="✂️ Kırpma (Trim) Zaman İşaretçileri" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush}"/>
@@ -172,7 +218,7 @@
         </Grid>
 
         <!-- SAĞ PANEL: Export & YouTube Metadata & Queue -->
-        <Border Grid.Column="4" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12">
+        <Border Grid.Column="3" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock Text="⚙️ YouTube Metadata &amp; Export" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,12"/>
@@ -317,7 +363,7 @@
                             <DataTemplate>
                                 <Border Background="#1E293B" CornerRadius="6" Padding="8" Margin="0,0,0,6" BorderBrush="#334155" BorderThickness="1">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="White" FontSize="12"/>
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="White" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="34"/>
                                         <Grid Margin="0,2,0,4">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -327,7 +373,11 @@
                                             <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat={}{0:N1}%}" FontSize="11" Foreground="#38BDF8" FontWeight="Bold"/>
                                         </Grid>
                                         <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" Height="6" Foreground="#10B981" Background="#334155" Margin="0,0,0,4"/>
-                                        <Button Content="İptal Et" Command="{Binding DataContext.CancelJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#EF4444" Foreground="White" FontSize="10" Padding="6,2" HorizontalAlignment="Right"/>
+                                        
+                                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                            <Button Content="Sil" Command="{Binding DataContext.DeleteJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#64748B" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,4,4"/>
+                                            <Button Content="İptal Et" Command="{Binding DataContext.CancelJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#EF4444" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,0,4"/>
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
@@ -342,7 +392,7 @@
                             <DataTemplate>
                                 <Border Background="#1E293B" CornerRadius="6" Padding="8" Margin="0,0,0,6" BorderBrush="#8B5CF6" BorderThickness="1">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="White" FontSize="12"/>
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="White" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="34"/>
                                         <Grid Margin="0,2,0,4">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -368,8 +418,8 @@
                                             </TextBlock.Style>
                                         </TextBlock>
 
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                            <Button Content="📺 YouTube'da Aç" Command="{Binding DataContext.OpenYouTubeVideoCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding YouTubeVideoUrl}" Background="#8B5CF6" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,4,0">
+                                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                            <Button Content="📺 YouTube'da Aç" Command="{Binding DataContext.OpenYouTubeVideoCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding YouTubeVideoUrl}" Background="#8B5CF6" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,4,4">
                                                 <Button.Style>
                                                     <Style TargetType="Button">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -382,7 +432,7 @@
                                                 </Button.Style>
                                             </Button>
 
-                                            <Button Content="Tekrar Dene" Command="{Binding DataContext.RetryUploadJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#0284C7" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,4,0">
+                                            <Button Content="Tekrar Dene" Command="{Binding DataContext.RetryUploadJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#0284C7" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,4,4">
                                                 <Button.Style>
                                                     <Style TargetType="Button">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -395,8 +445,9 @@
                                                 </Button.Style>
                                             </Button>
 
-                                            <Button Content="İptal Et" Command="{Binding DataContext.CancelUploadJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#EF4444" Foreground="White" FontSize="10" Padding="6,2"/>
-                                        </StackPanel>
+                                            <Button Content="Sil" Command="{Binding DataContext.DeleteUploadJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#64748B" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,4,4"/>
+                                            <Button Content="İptal Et" Command="{Binding DataContext.CancelUploadJobCommand, ElementName=StudioViewRoot}" CommandParameter="{Binding}" Background="#EF4444" Foreground="White" FontSize="10" Padding="6,2" Margin="0,0,0,4"/>
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>

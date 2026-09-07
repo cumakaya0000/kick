@@ -36,7 +36,9 @@ public partial class App : Application
             .Build();
 
         Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(configuration)
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .WriteTo.File("Logs/kickvideo-.log", rollingInterval: RollingInterval.Day)
             .Enrich.FromLogContext()
             .CreateLogger();
 
@@ -49,10 +51,10 @@ public partial class App : Application
                 .ConfigureServices((context, services) =>
                 {
                     var connectionString = context.Configuration.GetConnectionString("DefaultConnection")
-                                           ?? "Data Source=kickvideodata.db";
+                                           ?? "Data Source=kickvideodata.db;Cache=Shared;";
 
                     services.AddDbContextFactory<AppDbContext>(options =>
-                        options.UseSqlite(connectionString));
+                        options.UseSqlite(connectionString, b => b.CommandTimeout((int)TimeSpan.FromSeconds(30).TotalSeconds)));
 
                     // Repositories & Services
                     services.AddSingleton<ISettingsService, SettingsService>();
@@ -131,6 +133,7 @@ public partial class App : Application
                     "ALTER TABLE RecordingLogs ADD COLUMN AudioCodec TEXT NULL;",
                     "ALTER TABLE RecordingLogs ADD COLUMN Resolution TEXT NULL;",
                     "ALTER TABLE RecordingLogs ADD COLUMN Duration TEXT NULL;",
+                    "ALTER TABLE RecordingLogs ADD COLUMN ProcessId INTEGER NULL;",
                     @"CREATE TABLE IF NOT EXISTS VideoJobs (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         RecordingLogId INTEGER NOT NULL,
@@ -241,11 +244,22 @@ public partial class App : Application
         }
     }
 
-    protected override async void OnExit(ExitEventArgs e)
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        Log.Information("Windows session ending. Triggering graceful shutdown...");
+        if (_host != null)
+        {
+            _host.StopAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
+        }
+        base.OnSessionEnding(e);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
     {
         if (_host != null)
         {
-            await _host.StopAsync();
+            Log.Information("Waiting for background services to gracefully shutdown...");
+            _host.StopAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
             _host.Dispose();
         }
 

@@ -55,6 +55,27 @@ public partial class VideoStudioView : UserControl
         _positionTimer.Stop();
     }
 
+    private void BtnBackward_Click(object sender, RoutedEventArgs e)
+    {
+        if (MediaPlayer.NaturalDuration.HasTimeSpan)
+        {
+            var newPosition = MediaPlayer.Position.TotalSeconds - 10;
+            if (newPosition < 0) newPosition = 0;
+            MediaPlayer.Position = TimeSpan.FromSeconds(newPosition);
+        }
+    }
+
+    private void BtnForward_Click(object sender, RoutedEventArgs e)
+    {
+        if (MediaPlayer.NaturalDuration.HasTimeSpan)
+        {
+            var newPosition = MediaPlayer.Position.TotalSeconds + 10;
+            if (newPosition > MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds)
+                newPosition = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+            MediaPlayer.Position = TimeSpan.FromSeconds(newPosition);
+        }
+    }
+
     private void TimelineSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (MediaPlayer.NaturalDuration.HasTimeSpan)

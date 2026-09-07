@@ -20,6 +20,7 @@ public class RecordingLog
     public string? Resolution { get; set; }
     public TimeSpan? Duration { get; set; }
     public string? ErrorMessage { get; set; }
+    public int? ProcessId { get; set; }
 
     public Streamer? Streamer { get; set; }
 }

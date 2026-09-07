@@ -53,4 +53,19 @@ public class VideoExportProfile
         Fps = 60,
         RequiresNative4KSource = true
     };
+
+    public static VideoExportProfile YouTubeShorts => new()
+    {
+        Name = "YouTubeShorts",
+        DisplayName = "📱 YouTube Shorts (1080x1920 Dikey)",
+        Description = "Yatay yayını dikey (9:16) formata çevirir (ortayı kırpar). YouTube Shorts için idealdir.",
+        IsFastCopy = false,
+        IsAccurateTrim = true,
+        VideoCodec = "libx264",
+        AudioCodec = "aac",
+        AudioBitrateKbps = 256,
+        Resolution = "1080x1920",
+        Fps = 60,
+        RequiresNative4KSource = false
+    };
 }

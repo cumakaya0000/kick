@@ -47,9 +47,13 @@ public class StreamerRepository : IStreamerRepository
     public async Task UpdateAsync(Streamer streamer, CancellationToken cancellationToken = default)
     {
         await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        streamer.UpdatedAt = DateTime.Now;
-        context.Streamers.Update(streamer);
-        await context.SaveChangesAsync(cancellationToken);
+        var existing = await context.Streamers.FindAsync(new object[] { streamer.Id }, cancellationToken);
+        if (existing != null)
+        {
+            streamer.UpdatedAt = DateTime.Now;
+            context.Entry(existing).CurrentValues.SetValues(streamer);
+            await context.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)

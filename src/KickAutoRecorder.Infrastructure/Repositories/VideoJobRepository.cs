@@ -53,8 +53,12 @@ public class VideoJobRepository : IVideoJobRepository
     public async Task UpdateAsync(VideoJob job, CancellationToken cancellationToken = default)
     {
         if (job == null) throw new ArgumentNullException(nameof(job));
-        _context.VideoJobs.Update(job);
-        await _context.SaveChangesAsync(cancellationToken);
+        var existing = await _context.VideoJobs.FindAsync(new object[] { job.Id }, cancellationToken);
+        if (existing != null)
+        {
+            _context.Entry(existing).CurrentValues.SetValues(job);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task UpdateStatusAsync(int id, VideoJobStatus status, string? errorMessage = null, CancellationToken cancellationToken = default)
