@@ -31,7 +31,7 @@ public class YouTubeUploadService : IYouTubeUploadService
         _logger = logger;
     }
 
-    public YouTubeUploadValidationResult ValidateJobBeforeUpload(YouTubeUploadJob job, bool checkAuth = true)
+    public async Task<YouTubeUploadValidationResult> ValidateJobBeforeUploadAsync(YouTubeUploadJob job, bool checkAuth = true, CancellationToken cancellationToken = default)
     {
         var result = new YouTubeUploadValidationResult();
 
@@ -68,7 +68,7 @@ public class YouTubeUploadService : IYouTubeUploadService
 
         if (checkAuth)
         {
-            var account = _authService.GetAccountInfoAsync().GetAwaiter().GetResult();
+            var account = await _authService.GetAccountInfoAsync(cancellationToken);
             if (!account.IsConnected)
             {
                 result.Errors.Add("YouTube hesabı bağlı değil. Lütfen Ayarlar sayfasından hesabınızı bağlayın.");
@@ -84,7 +84,7 @@ public class YouTubeUploadService : IYouTubeUploadService
         Action<double, long, long>? onProgress = null,
         CancellationToken cancellationToken = default)
     {
-        var validation = ValidateJobBeforeUpload(job, checkAuth: true);
+        var validation = await ValidateJobBeforeUploadAsync(job, checkAuth: true, cancellationToken);
         if (!validation.IsValid)
         {
             job.Status = YouTubeUploadStatus.Failed;

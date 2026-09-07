@@ -8,7 +8,7 @@ namespace KickAutoRecorder.Core.Interfaces;
 
 public interface IYouTubeUploadService
 {
-    YouTubeUploadValidationResult ValidateJobBeforeUpload(YouTubeUploadJob job, bool checkAuth = true);
+    Task<YouTubeUploadValidationResult> ValidateJobBeforeUploadAsync(YouTubeUploadJob job, bool checkAuth = true, CancellationToken cancellationToken = default);
     Task<YouTubeUploadJob> ExecuteUploadJobAsync(
         YouTubeUploadJob job,
         Action<double, long, long>? onProgress = null,

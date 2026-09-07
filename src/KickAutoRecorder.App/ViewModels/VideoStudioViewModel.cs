@@ -1072,7 +1072,7 @@ public partial class VideoStudioViewModel : ObservableObject
 
             if (_uploadService != null)
             {
-                var val = _uploadService.ValidateJobBeforeUpload(uploadJob, checkAuth: true);
+                var val = await _uploadService.ValidateJobBeforeUploadAsync(uploadJob, checkAuth: true);
                 if (!val.IsValid)
                 {
                     StatusMessage = $"⚠️ {val.ErrorSummary}";
@@ -1124,7 +1124,7 @@ public partial class VideoStudioViewModel : ObservableObject
 
         if (_uploadService != null)
         {
-            var val = _uploadService.ValidateJobBeforeUpload(job, checkAuth: true);
+            var val = await _uploadService.ValidateJobBeforeUploadAsync(job, checkAuth: true);
             if (!val.IsValid)
             {
                 StatusMessage = $"⚠️ {val.ErrorSummary}";
