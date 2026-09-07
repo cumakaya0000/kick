@@ -223,6 +223,45 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task SelectOAuthConfigAsync()
+    {
+        if (_youTubeAuthService == null) return;
+
+        var dialog = new OpenFileDialog
+        {
+            Title = "Google Cloud OAuth Credentials JSON Dosyasını Seçin",
+            Filter = "OAuth JSON Credentials (client_secret_*.json;*.json)|client_secret_*.json;*.json|Tüm Dosyalar (*.*)|*.*"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                StatusMessage = "OAuth JSON credential dosyası doğrulanıyor...";
+                StatusColor = "#38BDF8";
+
+                var success = await _youTubeAuthService.ImportClientSecretsJsonAsync(dialog.FileName);
+                if (success)
+                {
+                    StatusMessage = "✅ OAuth Yapılandırması başarıyla içe aktarıldı ve güvenli alana kopyalandı.";
+                    StatusColor = "#10B981";
+                    await RefreshYouTubeAccountStatusAsync();
+                }
+                else
+                {
+                    StatusMessage = "❌ Seçilen JSON dosyasında geçerli bir Google OAuth Desktop Client ID bulunamadı!";
+                    StatusColor = "#EF4444";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"OAuth JSON Aktarım Hatası: {ex.Message}";
+                StatusColor = "#EF4444";
+            }
+        }
+    }
+
+    [RelayCommand]
     public async Task RefreshYouTubeAccountStatusAsync()
     {
         if (_youTubeAuthService == null) return;

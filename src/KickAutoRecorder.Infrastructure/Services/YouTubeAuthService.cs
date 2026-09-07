@@ -39,14 +39,79 @@ public class YouTubeAuthService : IYouTubeAuthService
         _logger = logger;
     }
 
+    private string GetSecretsFilePath()
+    {
+        var appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KickVideo");
+        if (!Directory.Exists(appDataFolder))
+        {
+            Directory.CreateDirectory(appDataFolder);
+        }
+        return Path.Combine(appDataFolder, "youtube_client_secrets.json");
+    }
+
+    public bool IsOAuthConfigured()
+    {
+        var secrets = GetClientSecrets();
+        return !string.IsNullOrWhiteSpace(secrets.ClientId) && !string.IsNullOrWhiteSpace(secrets.ClientSecret);
+    }
+
+    public async Task<bool> ImportClientSecretsJsonAsync(string sourceJsonFilePath, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(sourceJsonFilePath) || !File.Exists(sourceJsonFilePath))
+        {
+            _logger.LogWarning("Import OAuth JSON failed: File does not exist.");
+            return false;
+        }
+
+        try
+        {
+            using (var stream = File.OpenRead(sourceJsonFilePath))
+            {
+                var loadedSecrets = await GoogleClientSecrets.FromStreamAsync(stream, cancellationToken);
+                if (loadedSecrets?.Secrets == null || string.IsNullOrWhiteSpace(loadedSecrets.Secrets.ClientId))
+                {
+                    _logger.LogWarning("Import OAuth JSON failed: Valid Desktop OAuth Client ID could not be found in file.");
+                    return false;
+                }
+            }
+
+            var destPath = GetSecretsFilePath();
+            File.Copy(sourceJsonFilePath, destPath, overwrite: true);
+            _logger.LogInformation("OAuth Client Secrets JSON successfully imported to AppData.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to import OAuth Client Secrets JSON file.");
+            return false;
+        }
+    }
+
     private ClientSecrets GetClientSecrets()
     {
+        var secretsFilePath = GetSecretsFilePath();
+        if (File.Exists(secretsFilePath))
+        {
+            try
+            {
+                using var stream = File.OpenRead(secretsFilePath);
+                var loaded = GoogleClientSecrets.FromStream(stream);
+                if (loaded?.Secrets != null && !string.IsNullOrWhiteSpace(loaded.Secrets.ClientId))
+                {
+                    return loaded.Secrets;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse imported client secrets JSON file.");
+            }
+        }
+
         var clientId = _configuration["YouTube:ClientId"];
         var clientSecret = _configuration["YouTube:ClientSecret"];
 
         if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(clientSecret))
         {
-            // Default placeholder / fallback config if not in appsettings
             clientId = _configuration["YouTubeOAuth:ClientId"] ?? "";
             clientSecret = _configuration["YouTubeOAuth:ClientSecret"] ?? "";
         }

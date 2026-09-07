@@ -8,6 +8,8 @@ namespace KickAutoRecorder.Core.Interfaces;
 
 public interface IYouTubeAuthService
 {
+    bool IsOAuthConfigured();
+    Task<bool> ImportClientSecretsJsonAsync(string sourceJsonFilePath, CancellationToken cancellationToken = default);
     Task<YouTubeAccountInfo> GetAccountInfoAsync(CancellationToken cancellationToken = default);
     Task<UserCredential?> GetUserCredentialAsync(CancellationToken cancellationToken = default);
     Task<YouTubeService?> GetYouTubeServiceAsync(CancellationToken cancellationToken = default);

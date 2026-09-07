@@ -146,6 +146,13 @@
 
                                 <!-- Auth Action Buttons -->
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Command="{Binding SelectOAuthConfigCommand}" Content="📁 OAuth Yapılandırmasını Seç" 
+                                            Padding="10,6" Background="#475569" Foreground="White" FontSize="11" Margin="0,0,6,0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
                                     <Button Command="{Binding ConnectYouTubeAccountCommand}" Content="🔗 Hesabı Bağla" 
                                             Padding="12,6" Background="#0284C7" Foreground="White" FontWeight="Bold" FontSize="11" Margin="0,0,6,0" Cursor="Hand">
                                         <Button.Resources>

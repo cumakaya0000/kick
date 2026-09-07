@@ -33,9 +33,13 @@ Thumbnails/
 manifest.json
 
 ## OAuth Secrets & Token Storage
+secrets/
 yt_token.dat
 *.dat
 client_secret*.json
+**/client_secret_*.json
+**/youtube-oauth.json
+**/*oauth*.json
 
 ## Executable Binaries
 *.exe
