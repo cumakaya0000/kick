@@ -1,0 +1,149 @@
+<UserControl x:Class="KickAutoRecorder.App.Views.RecordingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="550" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Controls -->
+        <Grid Grid.Row="0" Margin="4,0,4,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Kayıt Geçmişi" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+
+            <!-- Search Field -->
+            <TextBox Grid.Column="1" Margin="20,0,16,0"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                     BorderThickness="1" Padding="10,6" FontSize="12" VerticalAlignment="Center">
+                <TextBox.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </TextBox.Resources>
+            </TextBox>
+
+            <!-- Refresh Button -->
+            <Button Grid.Column="2" Command="{Binding LoadLogsCommand}" 
+                    Content="Listeyi Yenile" Background="#0284C7" Foreground="White" 
+                    Padding="14,6" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                </Button.Resources>
+            </Button>
+        </Grid>
+
+        <!-- Recording Logs List -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding RecordingLogs}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Recording Metadata -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StreamerUsername}" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"/>
+                                        
+                                        <!-- Status Badge -->
+                                        <Border Margin="10,0,0,0" Padding="6,2" CornerRadius="4" Background="{DynamicResource CardBorderBrush}">
+                                            <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        </Border>
+
+                                        <!-- Validation Badge -->
+                                        <Border Margin="6,0,0,0" Padding="6,2" CornerRadius="4">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#059669"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsValidated}" Value="False">
+                                                            <Setter Property="Background" Value="#DC2626"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock FontSize="10" FontWeight="Bold" Foreground="White">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="✅ Doğrulandı"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsValidated}" Value="False">
+                                                                <Setter Property="Text" Value="⚠️ Bozuk / Eksik"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <!-- Resolution Badge (If available) -->
+                                        <Border Margin="6,0,0,0" Padding="6,2" CornerRadius="4" Background="#0284C7">
+                                            <TextBlock Text="{Binding Resolution, TargetNullValue='-'}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding StreamTitle}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                        <TextBlock Text="{Binding StartedAt, StringFormat='Başlangıç: {0:g}'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,14,0"/>
+                                        <TextBlock Text="{Binding FileSizeBytes, StringFormat='Boyut: {0:N0} bytes'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,14,0"/>
+                                        <TextBlock Text="{Binding VideoCodec, StringFormat='Video: {0}'}" FontSize="11" Foreground="#38BDF8" Margin="0,0,10,0"/>
+                                        <TextBlock Text="{Binding AudioCodec, StringFormat='Ses: {0}'}" FontSize="11" Foreground="#38BDF8"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+
+                                <!-- Play Video Button -->
+                                <Button Grid.Column="1" Command="{Binding DataContext.PlayVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                        CommandParameter="{Binding FilePath}"
+                                        Content="Oynat" Background="#10B981" Foreground="White" 
+                                        Padding="14,6" FontSize="12" FontWeight="SemiBold" Margin="0,0,8,0" Cursor="Hand">
+                                    <Button.Resources>
+                                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                    </Button.Resources>
+                                </Button>
+
+                                <!-- Show in Explorer Button -->
+                                <Button Grid.Column="2" Command="{Binding DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                        CommandParameter="{Binding FilePath}"
+                                        Content="Klasörde Göster" Background="#334155" Foreground="White" 
+                                        Padding="14,6" FontSize="12" FontWeight="SemiBold" Margin="0,0,8,0" BorderThickness="0" Cursor="Hand">
+                                    <Button.Resources>
+                                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                    </Button.Resources>
+                                </Button>
+
+                                <!-- Delete Log Button -->
+                                <Button Grid.Column="3" Command="{Binding DataContext.DeleteLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                        CommandParameter="{Binding}"
+                                        Content="Sil" Background="#EF4444" Foreground="White" 
+                                        Padding="14,6" FontSize="12" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand">
+                                    <Button.Resources>
+                                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                    </Button.Resources>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

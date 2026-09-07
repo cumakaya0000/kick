@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KickAutoRecorder.App/KickAutoRecorder.App.csproj" />
+    <Project Path="src/KickAutoRecorder.Core/KickAutoRecorder.Core.csproj" />
+    <Project Path="src/KickAutoRecorder.Infrastructure/KickAutoRecorder.Infrastructure.csproj" />
+    <Project Path="src/KickAutoRecorder.Recording/KickAutoRecorder.Recording.csproj" />
+    <Project Path="src/KickAutoRecorder.Worker/KickAutoRecorder.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KickAutoRecorder.IntegrationTests/KickAutoRecorder.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

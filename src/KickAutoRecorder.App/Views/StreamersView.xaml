@@ -1,0 +1,276 @@
+<UserControl x:Class="KickAutoRecorder.App.Views.StreamersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:KickAutoRecorder.App.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="550" d:DesignWidth="800">
+    <UserControl.Resources>
+        <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
+        <converters:StatusToStringConverter x:Key="StatusToStringConverter"/>
+        <converters:TrackingTextConverter x:Key="TrackingTextConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </UserControl.Resources>
+    
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Input Bar Area -->
+        <Border Grid.Row="0" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Takip Edilecek Kick Yayıncısı Ekle" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox Grid.Column="0" Text="{Binding InputUsernameOrUrl, UpdateSourceTrigger=PropertyChanged}" 
+                             FontSize="14" Padding="12,10" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" 
+                             BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Margin="0,0,12,0">
+                        <TextBox.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                    
+                    <Button Grid.Column="1" Command="{Binding AddStreamerCommand}" 
+                            Content="+ Yayıncı Ekle" Background="#0284C7" Foreground="White" 
+                            Padding="20,10" FontWeight="Bold" FontSize="14" BorderThickness="0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </Grid>
+                
+                <!-- Error Validation Message -->
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" FontSize="13" 
+                           Margin="0,8,0,0" Visibility="{Binding HasError, Converter={StaticResource BoolToVisConverter}}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- List Header & Actions -->
+        <Grid Grid.Row="1" Margin="4,0,4,12">
+            <TextBlock Text="Takip Edilen Yayıncılar" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Command="{Binding CheckAllStatusesCommand}" 
+                        Content=" Canlılık Durumunu Yenile" Background="#0369A1" Foreground="White" 
+                        Padding="14,6" FontSize="12" FontWeight="SemiBold" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                    </Button.Resources>
+                </Button>
+                <Button Command="{Binding LoadStreamersCommand}" 
+                        Content="Listeyi Yenile" Background="Transparent" Foreground="#38BDF8" BorderThickness="0" Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Streamers List Container -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Streamers}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Status Indicator Dot -->
+                                <Ellipse Grid.Column="0" Width="14" Height="14" 
+                                         Fill="{Binding CurrentStatus, Converter={StaticResource StatusToColorConverter}}" 
+                                         VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                                <!-- Username, Category, Viewer Count & Stream Title -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Username}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        
+                                        <!-- Status Badge -->
+                                        <Border Margin="12,0,0,0" Padding="8,3" CornerRadius="6" 
+                                                Background="{Binding CurrentStatus, Converter={StaticResource StatusToColorConverter}}">
+                                            <TextBlock Text="{Binding CurrentStatus, Converter={StaticResource StatusToStringConverter}}" 
+                                                       FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+
+                                        <!-- Category Badge (if present) -->
+                                        <Border Margin="6,0,0,0" Padding="8,3" CornerRadius="6" Background="{DynamicResource CardBorderBrush}">
+                                            <TextBlock Text="{Binding Category, TargetNullValue='Genel'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </Border>
+
+                                        <!-- Viewers Count -->
+                                        <TextBlock Text="{Binding ViewerCount, StringFormat='{} İzleyici: {0:N0}'}" 
+                                                   FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+
+                                        <!-- Preferred Quality Selector -->
+                                        <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="Kalite:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                            <ComboBox ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding PreferredQuality}"
+                                                      Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource CardBorderBrush}" FontSize="11" Padding="6,2" VerticalAlignment="Center">
+                                                <ComboBox.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="4"/>
+                                                    </Style>
+                                                </ComboBox.Resources>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    
+                                    <!-- Stream Title -->
+                                    <TextBlock Text="{Binding StreamTitle, TargetNullValue='Yayın başlığı yok'}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                                    
+                                    <!-- Channel Link & Live Recording Info Badges -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0" VerticalAlignment="Center">
+                                        <Button Command="{Binding OpenChannelInBrowserCommand}" 
+                                                Content="{Binding ChannelUrl}" FontSize="11" Foreground="#38BDF8" 
+                                                Background="Transparent" BorderThickness="0" HorizontalAlignment="Left" Cursor="Hand"/>
+
+                                        <!-- Active Recording Live Timer & Start Time -->
+                                        <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRecordingActive}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+
+                                            <Border Background="#059669" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                                <TextBlock Text="{Binding RecordingStartedAtText, StringFormat='🔴 Başlangıç: {0}'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+                                            <Border Background="#0284C7" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                                <TextBlock Text="{Binding RecordingDurationText, StringFormat='⏱️ Süre: {0}'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+                                            <!-- Resilient Connection Recovery Telemetry Badges -->
+                                            <Border Background="#D97706" CornerRadius="4" Padding="6,2" Margin="0,0,6,0" ToolTip="{Binding LastErrorText}">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsRecovering}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding FFmpegStatusText, StringFormat='⚡ {0}'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+                                            <Border Background="#EA580C" CornerRadius="4" Padding="6,2">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsRecovering}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding NextRetryText, StringFormat='⏳ Tekrar: {0}'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Detailed Timestamps Row: Stream Open, Stream Close, Last Poll -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                        <TextBlock Text="{Binding LastLiveAtText, StringFormat='🟢 Yayın Açılış: {0}'}" FontSize="11" Foreground="#10B981" Margin="0,0,14,0"/>
+                                        <TextBlock Text="{Binding LastOfflineAtText, StringFormat='🔴 Son Kapanış: {0}'}" FontSize="11" Foreground="#F43F5E" Margin="0,0,14,0"/>
+                                        <TextBlock Text="{Binding LastCheckedAtText, StringFormat='🔄 Son Kontrol: {0}'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Action Buttons Panel -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    
+                                    <!-- Manual Record Start Button (When Online & Not Recording) -->
+                                    <Button Command="{Binding StartRecordingCommand}" 
+                                            Content="▶ Kayıt Başlat" Background="#059669" Foreground="White" 
+                                            Padding="10,6" FontSize="11" FontWeight="Bold" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding CurrentStatus}" Value="Live"/>
+                                                            <Condition Binding="{Binding IsRecordingActive}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <!-- Manual Record Stop Button (When Recording Active) -->
+                                    <Button Command="{Binding StopRecordingCommand}" 
+                                            Content="⏹ Kayıdı Durdur" Background="#DC2626" Foreground="White" 
+                                            Padding="10,6" FontSize="11" FontWeight="Bold" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsRecordingActive}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <!-- Single Status Refresh Button -->
+                                    <Button Command="{Binding CheckStatusCommand}" 
+                                            Content="Kontrol Et" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextSecondaryBrush}" 
+                                            Padding="10,6" FontSize="11" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" Margin="0,0,8,0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <!-- Toggle Tracking Button -->
+                                    <Button Command="{Binding ToggleTrackingCommand}" 
+                                            Content="{Binding IsTrackingEnabled, Converter={StaticResource TrackingTextConverter}}" 
+                                            Background="#334155" Foreground="White" Padding="12,6" 
+                                            FontSize="12" FontWeight="SemiBold" Margin="0,0,8,0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <!-- Delete Button -->
+                                    <Button Command="{Binding DeleteCommand}" 
+                                            Content="Sil" Background="#7F1D1D" Foreground="#FCA5A5" 
+                                            Padding="14,6" FontSize="12" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

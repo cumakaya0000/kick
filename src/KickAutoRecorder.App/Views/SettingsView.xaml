@@ -1,0 +1,249 @@
+<UserControl x:Class="KickAutoRecorder.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="550" d:DesignWidth="800">
+    <Grid Margin="10">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="750" HorizontalAlignment="Left">
+                
+                <!-- Section Header -->
+                <TextBlock Text="Uygulama ve Kayıt Ayarları" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="KickVideo otomatik kayıt motoru ve dosya kaydetme parametrelerini yapılandırın." FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,24"/>
+
+                <!-- Status Alert Bar (If message is present) -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{Binding StatusColor}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,20">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusMessage}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="{Binding StatusColor}" FontWeight="SemiBold" FontSize="13"/>
+                </Border>
+
+                <!-- Output Folder Setting Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Kayıt Çıktı Klasörü" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Yayın kayıtlarının MP4 formatında otomatik kaydedileceği bilgisayar klasörü." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,12"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}" 
+                                     Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource CardBorderBrush}" Padding="10,8" FontSize="13"/>
+                            <Button Grid.Column="1" Command="{Binding BrowseOutputFolderCommand}" Content="Gözat..." 
+                                    Margin="10,0,0,0" Padding="16,8" Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- FFmpeg Path Setting Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="FFmpeg Motor Konumu (ffmpeg.exe)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Video yayınlarını kaydetmek için kullanılan FFmpeg çalıştırılabilir dosya yolu." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,12"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding FFmpegPath, UpdateSourceTrigger=PropertyChanged}" 
+                                     Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource CardBorderBrush}" Padding="10,8" FontSize="13"/>
+                            <Button Grid.Column="1" Command="{Binding BrowseFFmpegPathCommand}" Content="Gözat..." 
+                                    Margin="10,0,0,0" Padding="16,8" Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                            <Button Grid.Column="2" Command="{Binding AutoDetectFFmpegCommand}" Content="Otomatik Bul" 
+                                    Margin="8,0,0,0" Padding="16,8" Background="#0284C7" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Polling Interval Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="150"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Yayın Durumu Kontrol Sıklığı (Saniye)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Arka plan servisinin Kick kanallarını ne kadar sıklıkla sorgulayacağını belirler (Örn: 30s)." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding PollingIntervalSeconds, UpdateSourceTrigger=PropertyChanged}" 
+                                 Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource CardBorderBrush}" Padding="10,8" FontSize="13" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Min Free Disk Space Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="150"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Minimum Boş Disk Alanı Güvenlik Limiti (GB)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Disk alanı bu miktarın altına düştüğünde sistem yeni kayıt başlatmaz (Örn: 5 GB)." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding MinDiskSpaceGB, UpdateSourceTrigger=PropertyChanged}" 
+                                 Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource CardBorderBrush}" Padding="10,8" FontSize="13" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Preferred Quality Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Varsayılan Kayıt Çözünürlük Kalitesi" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Yayın kayıtlarının hangi varsayılan çözünürlükte başlayacağını belirler (Varsayılan: En Yüksek)." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding PreferredQuality}"
+                                  Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource CardBorderBrush}" Padding="10,8" FontSize="13" VerticalAlignment="Center">
+                            <ComboBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                </Style>
+                            </ComboBox.Resources>
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <!-- YouTube Integration Setting Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="🔴 YouTube Entegrasyonu &amp; OAuth Yetkilendirmesi" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="YouTube Data API v3 üzerinden yayın videolarını ve kırpılmış klipleri kanalınıza yükleyin." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,12"/>
+
+                        <!-- Account Status Indicator Card -->
+                        <Border Background="#1E293B" CornerRadius="8" Padding="14" Margin="0,0,0,14" BorderBrush="#334155" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <TextBlock Text="Hesap Durumu: " FontSize="13" Foreground="#94A3B8"/>
+                                        <TextBlock Text="{Binding YouTubeStatusText}" FontSize="13" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Kanal: " FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock Text="{Binding YouTubeChannelTitle, FallbackValue='(Bağlı Kanal Yok)'}" FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Auth Action Buttons -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Command="{Binding ConnectYouTubeAccountCommand}" Content="🔗 Hesabı Bağla" 
+                                            Padding="12,6" Background="#0284C7" Foreground="White" FontWeight="Bold" FontSize="11" Margin="0,0,6,0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <Button Command="{Binding TestYouTubeConnectionCommand}" Content="⚡ Test Et" 
+                                            Padding="10,6" Background="#334155" Foreground="White" FontSize="11" Margin="0,0,6,0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <Button Command="{Binding DisconnectYouTubeAccountCommand}" Content="🚪 Bağlantıyı Kes" 
+                                            Padding="10,6" Background="#EF4444" Foreground="White" FontSize="11" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                        </Button.Resources>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <CheckBox IsChecked="{Binding EnableAutoYouTubeUpload}" Content="Kayıt/Render bittiğinde YouTube'a otomatik yükleme altyapısını etkinleştir" 
+                                  Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Application Theme Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Uygulama Görünüm Teması" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Koyu Tema (Dark) veya Açık Tema (Light) renk düzenini seçin." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding IsDarkTheme}" Content="Koyu Tema (Dark)" 
+                                  Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Application Error & System Log Viewer Card -->
+                <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="20" Margin="0,0,0,24">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Uygulama Hata ve Sistem Logları" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Oluşan tüm arka plan olaylarını ve olası kayıt hatalarını canlı görüntüleyin." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Command="{Binding RefreshLogsCommand}" Content="🔄 Yenile" 
+                                    Background="#334155" Foreground="White" Padding="12,6" FontSize="12" FontWeight="SemiBold" Margin="0,0,8,0" BorderThickness="0" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                </Button.Resources>
+                            </Button>
+
+                            <Button Grid.Column="2" Command="{Binding CopyLogsToClipboardCommand}" Content="📋 Logları Kopyala" 
+                                    Background="#0284C7" Foreground="White" Padding="14,6" FontSize="12" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                </Button.Resources>
+                            </Button>
+                        </Grid>
+
+                        <TextBox Text="{Binding LogsContent, Mode=OneWay}" 
+                                 Background="{DynamicResource InputBackgroundBrush}" Foreground="#38BDF8" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" 
+                                 FontFamily="Consolas, Cascadia Code, Courier New" FontSize="11" Height="220" 
+                                 IsReadOnly="True" TextWrapping="NoWrap" 
+                                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="10">
+                            <TextBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                </Style>
+                            </TextBox.Resources>
+                        </TextBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- Save Action Button -->
+                <Button Command="{Binding SaveSettingsCommand}" Content="Ayar Değişikliklerini Kaydet" 
+                        Padding="24,12" FontSize="14" FontWeight="Bold" Background="#059669" Foreground="White" BorderThickness="0" HorizontalAlignment="Left" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style>
+                    </Button.Resources>
+                </Button>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

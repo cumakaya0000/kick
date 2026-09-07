@@ -1,0 +1,53 @@
+## Visual Studio / .NET Build Output
+bin/
+obj/
+publish/
+publish_folder/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+.gemini/
+
+## Database & Data Files
+*.db
+*.db-wal
+*.db-shm
+kickvideodata.db
+
+## Logs & Telemetry
+Logs/
+*.log
+
+## Video Recordings & Exports
+kayitlar/
+Exports/
+Thumbnails/
+*.mp4
+*.ts
+*.mkv
+manifest.json
+
+## OAuth Secrets & Token Storage
+yt_token.dat
+*.dat
+client_secret*.json
+
+## Executable Binaries
+*.exe
+ffmpeg.exe
+ffprobe.exe
+
+## Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp

@@ -1,0 +1,45 @@
+<Application x:Class="KickAutoRecorder.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#0F172A"/>
+            <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1E293B"/>
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#334155"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F8FAFC"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#94A3B8"/>
+            <SolidColorBrush x:Key="TextMutedBrush" Color="#64748B"/>
+            <SolidColorBrush x:Key="InputBackgroundBrush" Color="#0F172A"/>
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundBrush" Color="#1E293B"/>
+            <SolidColorBrush x:Key="ComboBoxItemForegroundBrush" Color="#F8FAFC"/>
+
+            <!-- Custom ComboBoxItem Style -->
+            <Style TargetType="ComboBoxItem">
+                <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ComboBoxItemForegroundBrush}"/>
+                <Setter Property="Padding" Value="10,6"/>
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#0284C7"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="#0369A1"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Custom ComboBox Style -->
+            <Style TargetType="ComboBox">
+                <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="8,4"/>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
